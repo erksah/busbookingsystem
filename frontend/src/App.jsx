@@ -31,6 +31,8 @@ import AdminRoutes from "./admin/routes/AdminRoutes";
 
 // 🔐 PASSENGER
 import PassengerRoutes from "./passenger/routes/PassengerRoutes";
+import NotFound from "./pages/error/NotFound";
+
 
 
 // ==============================
@@ -94,16 +96,7 @@ const Layout = () => {
           {/* ==============================
               ❌ 404
           ============================== */}
-          <Route
-            path="*"
-            element={
-              <div className="text-center mt-20">
-                <h2 className="text-xl font-semibold">
-                  Page not found ❌
-                </h2>
-              </div>
-            }
-          />
+          <Route path="*" element={<NotFound />} />
 
         </Routes>
 
