@@ -13,14 +13,25 @@ const app = express();
 // ==============================
 // 🔥 MIDDLEWARE
 // ==============================
-app.use(cors());
+app.use(cors({
+  origin: "*", 
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 app.use(express.json());
+
+// 🧪 NORMALIZATION (handle potential double slashes from deployment URLs)
+app.use((req, res, next) => {
+  req.url = req.url.replace(/\/+/g, '/');
+  next();
+});
 
 // 🔥 REQUEST LOGGER
 app.use((req, res, next) => {
   console.log(`📌 ${req.method} ${req.url}`);
   next();
 });
+
 
 // ==============================
 // 🔥 ROUTES IMPORT
@@ -89,15 +100,13 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 
 const mongoUri = process.env.MONGO_URI || "mongodb+srv://busdb:IqYfwLZ0POb3oXWC@cluster0.q3nvzez.mongodb.net/busDB";
-mongoose.connect(mongoUri)
-  .then(() => {
-    console.log("✅ MongoDB Connected");
 
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-    });
-
-  })
-  .catch((err) => {
-    console.log("❌ MongoDB Connection Error:", err);
-  });
+// 🔥 START SERVER IMMEDIATELY (Render compatibility)
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  
+  // 🔌 CONNECT DB IN BACKGROUND
+  mongoose.connect(mongoUri)
+    .then(() => console.log("✅ MongoDB Connected"))
+    .catch((err) => console.log("❌ MongoDB Connection Error:", err));
+});

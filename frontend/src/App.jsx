@@ -1,3 +1,4 @@
+import React, { useEffect } from "react";
 import Processing from "./pages/processing/Processing";
 import {
   BrowserRouter as Router,
@@ -5,6 +6,7 @@ import {
   Route,
   useLocation,
 } from "react-router-dom";
+
 
 import Navbar from "./components/navbar/Navbar";
 import Footer from "./components/footer/Footer";
@@ -122,6 +124,36 @@ const Layout = () => {
 // 🚀 APP ROOT
 // ==============================
 function App() {
+
+  // ==============================
+  // ⚡️ KEEP-AWAKE PING (Render)
+  // ==============================
+  useEffect(() => {
+    const API = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" 
+      ? "http://localhost:5000/api" 
+      : import.meta.env.VITE_API_URL;
+
+    // Remove /api from the end to ping the ROOT of the server
+    const rootURL = API.replace(/\/api\/?$/, "");
+
+    const pingServer = async () => {
+      try {
+        console.log("⚡️ Pinging backend to keep awake...");
+        await fetch(rootURL || "/");
+      } catch (e) {
+        console.log("Ping failed (server might be down)");
+      }
+    };
+
+    // Ping immediately on load
+    pingServer();
+
+    // Ping every 10 minutes
+    const interval = setInterval(pingServer, 10 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <Router>
       <Layout />

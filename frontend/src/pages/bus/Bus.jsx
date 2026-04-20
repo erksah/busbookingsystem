@@ -39,7 +39,9 @@ const MAJOR_CITIES_INDIA = [
 
 let searchTimeout;
 
-const API = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? "http://localhost:5000/api" : import.meta.env.VITE_API_URL;
+const API_BASE = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? "http://localhost:5000/api" : import.meta.env.VITE_API_URL;
+const API = (API_BASE || "").replace(/\/$/, "");
+
 
 // Images
 import Bus1 from "../../assets/images/bus1.png";
