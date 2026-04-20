@@ -13,11 +13,19 @@ const app = express();
 // ==============================
 // 🔥 MIDDLEWARE
 // ==============================
-app.use(cors({
-  origin: "*", 
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
+// 1. Manual CORS (Ultra-Robust for Render/Vercel)
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,PATCH,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  
+  // Handle Preflight
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 app.use(express.json());
 
 // 🧪 NORMALIZATION (handle potential double slashes from deployment URLs)
@@ -25,6 +33,12 @@ app.use((req, res, next) => {
   req.url = req.url.replace(/\/+/g, '/');
   next();
 });
+
+// ⚡️ DEDICATED PING ROUTE
+app.get("/api/ping", (req, res) => {
+  res.status(200).json({ status: "alive", timestamp: new Date() });
+});
+
 
 // 🔥 REQUEST LOGGER
 app.use((req, res, next) => {

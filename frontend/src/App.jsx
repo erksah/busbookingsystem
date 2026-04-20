@@ -133,13 +133,15 @@ function App() {
       ? "http://localhost:5000/api" 
       : import.meta.env.VITE_API_URL;
 
-    // Remove /api from the end to ping the ROOT of the server
-    const rootURL = API.replace(/\/api\/?$/, "");
+    if (!API) return;
+
+    // Normalize URL
+    const pingURL = API.replace(/\/$/, "") + "/ping";
 
     const pingServer = async () => {
       try {
         console.log("⚡️ Pinging backend to keep awake...");
-        await fetch(rootURL || "/");
+        await fetch(pingURL, { mode: 'no-cors' }); // no-cors to be safe, we just need the request to hit the server
       } catch (e) {
         console.log("Ping failed (server might be down)");
       }
@@ -148,11 +150,12 @@ function App() {
     // Ping immediately on load
     pingServer();
 
-    // Ping every 10 minutes
-    const interval = setInterval(pingServer, 10 * 60 * 1000);
+    // Ping every 5 minutes (reduced from 10 to be more active)
+    const interval = setInterval(pingServer, 5 * 60 * 1000);
 
     return () => clearInterval(interval);
   }, []);
+
 
   return (
     <Router>
