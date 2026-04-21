@@ -52,10 +52,10 @@ export const cancelTemplate = (booking) => {
 
       <p>
         💸 Refund: ${
-          booking.paymentStatus === "refunded"
+          booking.bookingStatus === "cancelled" && booking.paymentStatus === "paid"
+            ? "No refund (Same Day cancellation policy)"
+            : booking.paymentStatus === "refunded"
             ? "Initiated"
-            : booking.paymentStatus === "paid"
-            ? "Will be processed soon"
             : "Not applicable"
         }
       </p>

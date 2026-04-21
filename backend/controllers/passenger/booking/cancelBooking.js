@@ -128,9 +128,11 @@ export const cancelPassengerBooking = async (req, res) => {
 
 💺 Seats: ${booking.seats.join(", ")}
 
-💸 Refund: ${
-          booking.paymentStatus === "refunded" ? "Initiated" : "N/A"
-        }
+ 💸 Refund: ${
+           booking.paymentStatus === "refunded" 
+             ? "Initiated" 
+             : (!isRefundable && canCancel ? "No refund (Same Day)" : "N/A")
+         }
 
 🎫 Ticket: ${booking.ticketNumber}
 

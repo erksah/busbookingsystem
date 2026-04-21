@@ -14,16 +14,69 @@ const MyBookings = () => {
   // ==============================
   // 📅 CHECK DATE TYPE
   // ==============================
-  const getBookingType = (date) => {
-    const today = new Date();
+  const getBookingType = (date, time) => {
+    const now = new Date();
     const journey = new Date(date);
 
-    today.setHours(0,0,0,0);
-    journey.setHours(0,0,0,0);
+    // Parse time (e.g., "10:00 AM" or "02:30 PM")
+    if (time) {
+      const timeMatch = time.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+      if (timeMatch) {
+        let hours = parseInt(timeMatch[1], 10);
+        const mins = parseInt(timeMatch[2], 10);
+        const ampm = timeMatch[3];
+        
+        if (ampm) {
+          if (ampm.toUpperCase() === 'PM' && hours < 12) hours += 12;
+          if (ampm.toUpperCase() === 'AM' && hours === 12) hours = 0;
+        }
+        
+        journey.setHours(hours, mins, 0, 0);
+      }
+    } else {
+      journey.setHours(23, 59, 59, 999);
+    }
 
-    if (journey.getTime() === today.getTime()) return "today";
-    if (journey > today) return "upcoming";
-    return "past";
+    const todayDate = new Date();
+    todayDate.setHours(0,0,0,0);
+    const journeyDateOnly = new Date(date);
+    journeyDateOnly.setHours(0,0,0,0);
+
+    if (journey.getTime() < now.getTime()) return "past";
+    if (journeyDateOnly.getTime() === todayDate.getTime()) return "today";
+    return "upcoming";
+  };
+
+  const isCancellable = (booking) => {
+    if (booking.bookingStatus === "cancelled") return false;
+
+    const journey = new Date(booking.journeyDate);
+    const time = booking.departureTime || booking.busId?.departureTime;
+
+    if (time) {
+      const timeMatch = time.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+      if (timeMatch) {
+        let hours = parseInt(timeMatch[1], 10);
+        const mins = parseInt(timeMatch[2], 10);
+        const ampm = timeMatch[3];
+        
+        if (ampm) {
+          if (ampm.toUpperCase() === 'PM' && hours < 12) hours += 12;
+          if (ampm.toUpperCase() === 'AM' && hours === 12) hours = 0;
+        }
+        
+        journey.setHours(hours, mins, 0, 0);
+      }
+    } else {
+      journey.setHours(23, 59, 59, 999);
+    }
+
+    const now = new Date();
+    const msDifference = journey.getTime() - now.getTime();
+    const hoursDifference = msDifference / (1000 * 60 * 60);
+
+    // Can only cancel if departure is at least 1 hour away
+    return hoursDifference >= 1;
   };
 
   // ==============================
@@ -128,7 +181,8 @@ const MyBookings = () => {
       ) : (
         bookings.map((b) => {
 
-          const type = getBookingType(b.journeyDate);
+          const departureTime = b.departureTime || b.busId?.departureTime;
+          const type = getBookingType(b.journeyDate, departureTime);
 
           return (
             <div
@@ -232,7 +286,7 @@ const MyBookings = () => {
                   View Receipt
                 </button>
 
-                {b.bookingStatus !== "cancelled" && (
+                {isCancellable(b) && (
                   <button
                     onClick={() => handleCancelBooking(b._id)}
                     className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
