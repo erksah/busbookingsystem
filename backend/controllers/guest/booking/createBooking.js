@@ -103,6 +103,16 @@ export const createGuestBooking = async (req, res) => {
         });
       }
 
+      // 🔥 ELDERLY RULE
+      if (seatCategory === "elderly") {
+        const age = Number(p?.age);
+        if (isNaN(age) || age < 60 || age > 120) {
+          return res.status(400).json({
+            message: `Seat ${seatNum} is reserved for elderly passengers (60-120 years) 👴. Current age: ${p?.age}`,
+          });
+        }
+      }
+
       finalPassengers.push({
         name: p?.name || name,
         age: Number(p?.age) || 25,
@@ -211,20 +221,23 @@ export const createGuestBooking = async (req, res) => {
     // 📲 SMS + WHATSAPP
     // ==============================
     if (finalPhone) {
+      const hasSpecialSeat = finalPassengers.some(p => p.seatCategory === "ladies" || p.seatCategory === "elderly");
+      const idNotice = hasSpecialSeat ? "\n\n⚠️ ID Verification required for Special Seats (Ladies/Elderly) during boarding." : "";
+
       await sendNotification(finalPhone, `
-🎟 Booking Confirmed!
-
-👤 Name: ${name}
-🚌 Route: ${bus.from} → ${bus.to}
-🛣 Distance: ${bus.distanceKm ? bus.distanceKm + " km" : "N/A"}
-🕐 Departure: ${bus.departureTime}
-🕐 Arrival: ${bus.arrivalTime} ${bus.journeyDays > 0 ? `(+${bus.journeyDays} Day)` : ""}
-📅 Date: ${journeyDate}
-💺 Seats: ${seats.join(", ")}
-
-🎫 Ticket: ${ticketNumber}
-
-Happy Journey 🚌🔥
+  🎟 Booking Confirmed!
+  
+  👤 Name: ${name}
+  🚌 Route: ${bus.from} → ${bus.to}
+  🛣 Distance: ${bus.distanceKm ? bus.distanceKm + " km" : "N/A"}
+  🕐 Departure: ${bus.departureTime}
+  🕐 Arrival: ${bus.arrivalTime} ${bus.journeyDays > 0 ? `(+${bus.journeyDays} Day)` : ""}
+  📅 Date: ${journeyDate}
+  💺 Seats: ${seats.join(", ")}
+  
+  🎫 Ticket: ${ticketNumber}
+  ${idNotice}
+  Happy Journey 🚌🔥
       `);
     }
 

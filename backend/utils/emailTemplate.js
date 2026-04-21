@@ -53,6 +53,15 @@ export const bookingTemplate = (booking) => {
       }
 
       <hr/>
+      
+      ${
+        booking.passengers?.some(p => p.seatCategory === "ladies" || p.seatCategory === "elderly")
+        ? `<div style="background-color:#fff3cd; padding:15px; border-left:5px solid #ffc107; border-radius:5px; margin:15px 0;">
+             <b>⚠️ ID Verification Required</b><br/>
+             Special seats (Ladies/Elderly) have been booked. Please carry a valid ID for verification during ticket checking.
+           </div>`
+        : ""
+      }
 
       <p>📲 Please carry this ticket during travel.</p>
 

@@ -55,6 +55,7 @@ const Search = () => {
   const [buses, setBuses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [locations, setLocations] = useState([]);
+  const [lastSearchedDate, setLastSearchedDate] = useState("");
 
   // ==============================
   // 📍 FETCH LOCATIONS
@@ -122,7 +123,10 @@ const Search = () => {
   useEffect(() => {
     const today = new Date().toLocaleDateString("en-CA");
     setForm(prev => ({ ...prev, date: today }));
+    setLastSearchedDate(today); // init with today
   }, []);
+
+
 
   // ==============================
   // 🔍 SEARCH
@@ -143,6 +147,7 @@ const Search = () => {
       const data = await res.json();
 
       setBuses(data || []);
+      setLastSearchedDate(form.date); // 🔥 SAVE SUCCESSFUL SEARCH DATE
       setLoading(false);
 
     } catch (error) {
@@ -267,7 +272,7 @@ const Search = () => {
 
           {buses.map((bus) => {
             
-            const scheduleStatus = getBusStatus(bus.departureTime, bus.arrivalTime, bus.journeyDays, form.date);
+            const scheduleStatus = getBusStatus(bus.departureTime, bus.arrivalTime, bus.journeyDays, lastSearchedDate || form.date);
             const isBookingDisabled = bus.isFull || scheduleStatus !== "OPEN";
 
             return (
@@ -320,7 +325,7 @@ const Search = () => {
                   ) : null}
 
                   <button
-                    onClick={() => navigate(`/bus/${bus._id}?date=${form.date}`)}
+                    onClick={() => navigate(`/bus/${bus._id}?date=${lastSearchedDate || form.date}`)}
                     disabled={isBookingDisabled}
                     className={`mt-2 w-full md:w-auto px-4 py-2 rounded text-white font-semibold transition ${
                       isBookingDisabled

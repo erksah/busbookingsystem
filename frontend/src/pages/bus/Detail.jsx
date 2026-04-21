@@ -4,7 +4,7 @@ import { FaStar } from "react-icons/fa";
 
 import BusSeatLayout from "../../components/seat/BusSeatLayout";
 import SleeperSeatLayout from "../../components/seat/SleeperSeatLayout";
-import { calculateDuration, formatArrivalLabel } from "../../utils/timeCalc";
+import { calculateDuration, formatArrivalLabel, getBusStatus } from "../../utils/timeCalc";
 
 import Bus1 from "../../assets/images/bus1.png";
 import Bus2 from "../../assets/images/bus2.png";
@@ -125,6 +125,9 @@ const Detail = () => {
   // 💰 TOTAL
   const totalAmount = selectedSeats.length * bus.price;
 
+  const scheduleStatus = bus ? getBusStatus(bus.departureTime, bus.arrivalTime, bus.journeyDays, journeyDate) : "OPEN";
+  const isBusUnavailable = scheduleStatus !== "OPEN";
+
   // 🚫 LIMIT
   const handleSeatSelect = (seats) => {
     if (seats.length > 6) {
@@ -195,6 +198,17 @@ const Detail = () => {
             <p><b>Departure:</b> {bus.departureTime}</p>
             <p><b>Arrival:</b> {formatArrivalLabel(bus.arrivalTime, bus.journeyDays)}</p>
 
+            {isBusUnavailable && (
+              <div className="bg-red-50 text-red-700 p-3 rounded-lg text-sm font-semibold border border-red-200 mt-2">
+                {scheduleStatus === "REACHED" ? "🏁 Journey Completed" :
+                 scheduleStatus === "ON_THE_WAY" ? "🚌 Bus already Departed" :
+                 scheduleStatus === "CLOSING" ? "🔒 Booking Closed" :
+                 "🚫 Bus Not Available"}
+                <br/>
+                <span className="text-xs font-normal">Please choose a different date.</span>
+              </div>
+            )}
+
             <div className="pt-2">
               <p className="font-semibold text-violet-600 text-sm mb-1">
                 ⏱ Duration: {calculateDuration(bus.departureTime, bus.arrivalTime, bus.journeyDays)}
@@ -218,7 +232,15 @@ const Detail = () => {
           </div>
 
           {/* SEATS */}
-          <div className="bg-white p-5 rounded-xl shadow">
+          <div className={`bg-white p-5 rounded-xl shadow relative ${isBusUnavailable ? "opacity-50 pointer-events-none grayscale" : ""}`}>
+            
+            {isBusUnavailable && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/30 backdrop-blur-[1px] rounded-xl">
+                 <p className="bg-white px-4 py-2 rounded-lg shadow-lg font-bold text-red-600 border border-red-100">
+                    SELECTION DISABLED
+                 </p>
+              </div>
+            )}
 
             {bus.seatType === "Sleeper" ? (
               <SleeperSeatLayout

@@ -170,6 +170,14 @@ export const useCheckout = () => {
       if (seatLayoutItem?.category === "ladies" && p.gender !== "F") {
         return setError(`Seat ${p.seat} is reserved for ladies 👩. Please select Female gender.`);
       }
+
+      // 🔥 ELDERLY RULE VALIDATION
+      if (seatLayoutItem?.category === "elderly") {
+        const age = Number(p.age);
+        if (isNaN(age) || age < 60 || age > 120) {
+          return setError(`Seat ${p.seat} is reserved for elderly passengers (60-120 years) 👴. Current age: ${p.age}`);
+        }
+      }
     }
 
     setLoading(true);

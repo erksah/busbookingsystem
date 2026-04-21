@@ -65,6 +65,7 @@ const Bus = () => {
   const [buses, setBuses] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
+  const [lastSearchedDate, setLastSearchedDate] = useState("");
 
   const [form, setForm] = useState({
     from: "",
@@ -198,6 +199,7 @@ const Bus = () => {
         const data = await res.json();
 
         setBuses(res.ok ? data : []);
+        setLastSearchedDate(dateQuery); // 🔥 SAVE DATE BELONGING TO THESE RESULTS
 
       } catch {
         setBuses([]);
@@ -207,8 +209,9 @@ const Bus = () => {
     };
 
     fetchBuses();
-
   }, [fromQuery, toQuery, dateQuery]);
+
+
 
   // ==============================
   // FILTER CITIES
@@ -361,7 +364,7 @@ const Bus = () => {
           {filteredBuses.length > 0 ? (
             filteredBuses.map((bus, index) => {
               
-              const scheduleStatus = getBusStatus(bus.departureTime, bus.arrivalTime, bus.journeyDays, form.date);
+              const scheduleStatus = getBusStatus(bus.departureTime, bus.arrivalTime, bus.journeyDays, lastSearchedDate || dateQuery);
               const isBookingDisabled = bus.isFull || scheduleStatus !== "OPEN";
 
               const card = (
@@ -428,7 +431,7 @@ const Bus = () => {
               ) : (
                 <Link
                   key={bus._id}
-                  to={`/bus/${bus._id}?date=${dateQuery}`}
+                  to={`/bus/${bus._id}?date=${lastSearchedDate || dateQuery}`}
                   className="bg-white rounded-xl shadow hover:shadow-xl transition"
                 >
                   {card}
